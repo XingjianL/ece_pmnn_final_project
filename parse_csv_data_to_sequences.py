@@ -28,10 +28,10 @@ for j in range(1,10):
         with open(sequence_file_path, 'r') as file:
             sequence_indices = [int(line.strip()) for line in file.readlines()]
         
-        out_directory=f"./parsed_sequence_data/{Player}_{file_no}"
+        out_directory=f"./parsed_sequence_data"
         
-        # if not os.path.exists(out_directory):
-        #     os.makedirs(out_directory)
+        if not os.path.exists(out_directory):
+            os.makedirs(out_directory)
         
         for i in tqdm(range(len(sequence_indices))):
             if i<len(sequence_indices)-1:
@@ -49,5 +49,5 @@ for j in range(1,10):
             if split_data.loc[:,"time_passed"].iloc[-1] < 4.9:
                 print(out_directory, file_no, i, " not 5 seconds: ", split_data.loc[:,"time_passed"].iloc[-1])
                 continue
-            split_data.to_csv(f"{out_directory}_{str(i)}.csv",index=False)
+            split_data.to_csv(f"{out_directory}/{Player}_{file_no}_{str(i)}.csv",index=False)
     
