@@ -9,10 +9,10 @@ import torch
 from torchdiffeq import odeint_adjoint as odeint
 from tqdm import tqdm
 
-training_dataset = PMNNDataset(time_gap=3, batch_window=40)
+training_dataset = PMNNDataset(time_gap=7, batch_window=-1)
 training_loader = DataLoader(
     training_dataset, 
-    batch_size=4, # Note: this batch size is the number of files, more batches will be added by the window size and time_gap
+    batch_size=1, # Note: this batch size is the number of files, more batches will be added by the window size and time_gap
     shuffle=True, 
     collate_fn=partial(dynamic_collate_fn,window_size=training_dataset.batch_window),
     num_workers=4
@@ -31,12 +31,9 @@ for i in range(10):
         t0, u0, x0, t,u,x = batch
         #print(t0.shape, u0.shape, x0.shape, t.shape, u.shape, x.shape)
         y0 = torch.cat([u0,x0],1)
-        y = torch.cat([u,x],2)
-        preds = []
-        for j in range(t0.shape[0]):
-            pred = odeint(func,y0[j].cuda(),torch.squeeze(t[j]-t0[j]).cuda(),method="rk4")
-            preds.append(pred)
-        loss = criterion(torch.stack(preds),torch.squeeze(y).cuda())
+        y = torch.cat([u,x],1)
+        pred = odeint(func,y0.cuda(),t.cuda(),method="rk4")
+        loss = criterion(torch.squeeze(pred),y.cuda())
         loss.backward()
         #torch.nn.utils.clip_grad_norm_(func.parameters(), max_norm=1.0)
         optimizer.step()

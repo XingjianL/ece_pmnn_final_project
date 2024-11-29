@@ -30,7 +30,6 @@ class PMNNDataset(Dataset):
         return all_sequences
     
 # Parse window sizes of the signals
-# output is (# of batches, window_size, # of features), time is 1 feature, u is 8 features, x is 13 features
 def dynamic_collate_fn(batch, window_size):
     batch_t0 = torch.stack([t[0] for u,x,t in batch])
     batch_u0 = torch.stack([u[0] for u,x,t in batch])
