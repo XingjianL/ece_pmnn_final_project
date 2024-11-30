@@ -37,14 +37,14 @@ def dynamic_collate_fn(batch, window_size):
     # use all entries (note: only for batch_size = 1)
     if window_size < 0:
         assert len(batch) == 1 # Batch size must be 1 for stacking variable length signals, or specify a window_size
-        batch_u = batch[0][0][1:]
-        batch_x = batch[0][1][1:]
-        batch_t = batch[0][2][1:]
+        batch_u = batch[0][0][0:]
+        batch_x = batch[0][1][0:]
+        batch_t = batch[0][2][0:]
         return [batch_t0, batch_u0, batch_x0, batch_t, batch_u, batch_x]
     # if window size is specified
-    batch_t = torch.stack([t[1:window_size+1] for u,x,t in batch])
-    batch_u = torch.stack([u[1:window_size+1] for u,x,t in batch])
-    batch_x = torch.stack([x[1:window_size+1] for u,x,t in batch])
+    batch_t = torch.stack([t[0:window_size] for u,x,t in batch])
+    batch_u = torch.stack([u[0:window_size] for u,x,t in batch])
+    batch_x = torch.stack([x[0:window_size] for u,x,t in batch])
     for u,x,t in batch:
         max_t0 = len(t) - window_size - 1
         num_of_windows = len(t) // window_size - 1
@@ -52,7 +52,7 @@ def dynamic_collate_fn(batch, window_size):
         batch_t0 = torch.cat([batch_t0, torch.stack([t[st0] for st0 in seq_t0])])
         batch_u0 = torch.cat([batch_u0, torch.stack([u[st0] for st0 in seq_t0])])
         batch_x0 = torch.cat([batch_x0, torch.stack([x[st0] for st0 in seq_t0])])
-        batch_t = torch.cat([batch_t, torch.stack([t[st0+1:st0+window_size+1] for st0 in seq_t0])])
-        batch_u = torch.cat([batch_u, torch.stack([u[st0+1:st0+window_size+1] for st0 in seq_t0])])
-        batch_x = torch.cat([batch_x, torch.stack([x[st0+1:st0+window_size+1] for st0 in seq_t0])])
+        batch_t = torch.cat([batch_t, torch.stack([t[st0:st0+window_size] for st0 in seq_t0])])
+        batch_u = torch.cat([batch_u, torch.stack([u[st0:st0+window_size] for st0 in seq_t0])])
+        batch_x = torch.cat([batch_x, torch.stack([x[st0:st0+window_size] for st0 in seq_t0])])
     return [batch_t0, batch_u0, batch_x0, batch_t, batch_u, batch_x]
