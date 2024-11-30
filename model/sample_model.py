@@ -5,20 +5,18 @@ class ODEFunc(nn.Module):
         super(ODEFunc, self).__init__()
         # Defining a two layer MLP with tanh activation
         self.net = nn.Sequential(
-            nn.Linear(21, 80),   # modify from 2 input/output to 3 input/output
+            nn.Linear(21, 60),   # modify from 2 input/output to 3 input/output
             nn.Tanh(),
-            nn.Linear(80, 80),
+            nn.Linear(60, 60),
             nn.Tanh(),
-            nn.Linear(80, 80),
+            nn.Linear(60, 60),
             nn.Tanh(),
-            nn.Linear(80, 80),
-            nn.Tanh(),
-            nn.Linear(80, 13),
+            nn.Linear(60, 13),
         )
         ## Providing a specific initialization of the weights and biases
         for m in self.net.modules():
             if isinstance(m, nn.Linear):
-                nn.init.normal_(m.weight, mean=0, std=0.1)
+                nn.init.xavier_normal_(m.weight)
                 nn.init.constant_(m.bias, val=0)
 
     def forward(self, t, y):
