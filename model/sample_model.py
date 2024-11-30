@@ -1,17 +1,19 @@
 import torch.nn as nn
-
+import torch
 class ODEFunc(nn.Module):
     def __init__(self):
         super(ODEFunc, self).__init__()
         # Defining a two layer MLP with tanh activation
         self.net = nn.Sequential(
-            nn.Linear(21, 40),   # modify from 2 input/output to 3 input/output
+            nn.Linear(21, 80),   # modify from 2 input/output to 3 input/output
             nn.Tanh(),
-            nn.Linear(40, 40),
+            nn.Linear(80, 80),
             nn.Tanh(),
-            nn.Linear(40, 40),
+            nn.Linear(80, 80),
             nn.Tanh(),
-            nn.Linear(40, 21),
+            nn.Linear(80, 80),
+            nn.Tanh(),
+            nn.Linear(80, 13),
         )
         ## Providing a specific initialization of the weights and biases
         for m in self.net.modules():
@@ -20,4 +22,5 @@ class ODEFunc(nn.Module):
                 nn.init.constant_(m.bias, val=0)
 
     def forward(self, t, y):
-        return self.net(y)
+        #print(y.shape, t.shape,self.net(y).shape)
+        return torch.cat([torch.zeros((y.shape[0],8)).cuda(), self.net(y)], 1)
