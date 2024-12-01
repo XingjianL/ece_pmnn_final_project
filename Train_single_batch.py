@@ -20,7 +20,7 @@ val_dataset = PMNNDataset(start_time=4, stop_time=5, time_gap=1)
 val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, collate_fn=partial(dynamic_collate_fn, window_size=-1))
 
 func = ODEFunc().cuda()
-func.load_state_dict("relu_model_0.pth")
+func.load_state_dict(torch.load("relu_model_0.pth", weights_only=True))
 optimizer = optim.AdamW(func.parameters(), lr=1e-3)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.1)
 criterion = nn.MSELoss()
