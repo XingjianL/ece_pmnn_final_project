@@ -2,7 +2,7 @@ from tools.data_loader import PMNNDataset, dynamic_collate_fn
 from torch.utils.data import DataLoader
 from functools import partial
 import matplotlib.pyplot as plt
-from model.sample_model import ODEFunc
+from model.tanh_model import ODEFunc
 import torch.optim as optim
 import torch.nn as nn
 import torch

@@ -20,13 +20,14 @@ val_dataset = PMNNDataset(start_time=4, stop_time=5, time_gap=1)
 val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, collate_fn=partial(dynamic_collate_fn, window_size=-1))
 
 func = ODEFunc().cuda()
+func.load_state_dict("relu_model_0.pth")
 optimizer = optim.AdamW(func.parameters(), lr=1e-3)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.1)
 criterion = nn.MSELoss()
 avg_losses = [[]]*10
 fig = plt.figure(figsize=(8,2))
 # Iterate through the data
-for i in range(10):
+for i in range(1,10):
     print(f"--it {i}: total batches: {len(training_loader)}")
     batch_n = 0
     for batch in tqdm(training_loader):
