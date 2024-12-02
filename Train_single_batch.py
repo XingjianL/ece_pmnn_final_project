@@ -20,9 +20,9 @@ val_dataset = PMNNDataset(start_time=4, stop_time=5, time_gap=1)
 val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, collate_fn=partial(dynamic_collate_fn, window_size=-1))
 
 func = ODEFunc().cuda()
-model_prefix = "ELU_model"
-#func.load_state_dict(torch.load("relu_model_1.pth", weights_only=True))
-optimizer = optim.AdamW(func.parameters(), lr=1e-4)
+model_prefix = "ReLU_model"
+func.load_state_dict(torch.load("relu_model_0.pth", weights_only=True))
+optimizer = optim.AdamW(func.parameters(), lr=1e-3)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)
 criterion = nn.MSELoss()
 avg_losses = [[]]*10
@@ -55,7 +55,7 @@ for i in range(1,4):
         if batch_n % 200 == 0:
             torch.save(func.state_dict(), f"{model_prefix}_{i}.pth")
             tqdm.write(f"loss at {batch_n}: {loss.item()}. avg loss for epoch {i}: {avg_losses[i][-1]}")
-        if batch_n % 100 == 0:
+        if batch_n % 1 == 0:
             plt.clf()
             fig.suptitle(f"Epoch {i}. Batch {batch_n}")
             plt.subplot(141)
@@ -70,7 +70,7 @@ for i in range(1,4):
             plt.subplot(144)
             plt.plot(torch.tensor(avg_losses).T)
             plt.title("avg losses")
-            plt.ylim([0,1])
+            plt.ylim([0,max(1,torch.tensor(avg_losses).min()*2)])
             plt.show(block=False)
             plt.pause(0.1)
         
