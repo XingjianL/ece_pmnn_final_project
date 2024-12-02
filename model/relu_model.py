@@ -6,17 +6,17 @@ class ODEFunc(nn.Module):
         # Defining a two layer MLP with tanh activation
         self.net = nn.Sequential(
             nn.Linear(21, 100),   # modify from 2 input/output to 3 input/output
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(100, 100),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(100, 100),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(100, 100),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(100, 100),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(100, 100),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(100, 13),
         )
         ## Providing a specific initialization of the weights and biases
