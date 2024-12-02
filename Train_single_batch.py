@@ -70,7 +70,7 @@ for i in range(1,4):
             plt.subplot(144)
             plt.plot(torch.tensor(avg_losses).T)
             plt.title("avg losses")
-            plt.ylim([0,max(1,torch.tensor(avg_losses).min()*2)])
+            plt.ylim([0,max(.1,torch.tensor(avg_losses).min()*2)])
             plt.show(block=False)
             plt.pause(0.1)
         
