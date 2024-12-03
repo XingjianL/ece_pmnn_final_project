@@ -7,14 +7,14 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 from torchdiffeq import odeint_adjoint as odeint
 from tqdm import tqdm
-val_dataset = PMNNDataset(start_time=4, stop_time=5, time_gap=7)
+val_dataset = PMNNDataset(start_time=4, stop_time=5, time_gap=10)
 val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, collate_fn=partial(dynamic_collate_fn, window_size=-1))
 func = ODEFunc().cuda()
 func.load_state_dict(torch.load("tanh_model_4.pth", weights_only=True))
 fig = plt.figure(figsize=(12,3))
 batch_n = 0
 avg_l2 = []
-
+avg_loss = []
 criterion = nn.MSELoss()
 with torch.no_grad():
     for batch in tqdm(val_loader):
@@ -25,11 +25,15 @@ with torch.no_grad():
         y0 = torch.cat([u0,torch.tensor([[0,0,0]]),x0[:,3:]],1)
         y = torch.cat([u,x[:,:3]-x0[:,:3],x[:,3:]],1)
         pred = odeint(func,y0.cuda(),(t-t0).cuda(),method="rk4")
+        loss = criterion(torch.squeeze(pred.cpu().detach())[:,8:],y[:,8:])
+        #print(torch.squeeze(pred.cpu().detach()).shape,y.shape)
+        # if torch.isnan(loss):
+        #     break
         L2 = torch.sqrt(torch.sum(torch.square(torch.squeeze(pred.cpu().detach())[:,8:11]-y[:,8:11]),dim=1))[-1]
         #print((torch.squeeze(pred)[8:11] - y[8:11].cuda()).square().sum(dim=0))
         avg_l2.append(L2)
         #print(loss.item())
-        
+        avg_loss.append(loss.item())
         if batch_n % 1 == 0:
             # print(torch.cat([torch.squeeze(pred.cpu().detach())[:,8:11]+ x0[:,:3], torch.squeeze(pred.cpu().detach())[:,11:]], 1).shape)
             # print(torch.cat([y[:,8:11] + x0[:,:3], y[:,11:]],1).shape)
@@ -52,7 +56,8 @@ with torch.no_grad():
             #plt.ylim([0,max(.1,torch.tensor(avg_losses).min()*2)])
             plt.show(block=False)
             plt.pause(0.01)
-            tqdm.write(f"Mean L2: {torch.tensor(avg_l2).mean()}. Max L2: {torch.tensor(avg_l2).max()}. Min L2: {torch.tensor(avg_l2).min()}")
+            tqdm.write(f"Mean L2: {torch.tensor(avg_l2).mean()}. Max L2: {torch.tensor(avg_l2).max()}. Min L2: {torch.tensor(avg_l2).min()}\n\
+                       Mean Loss: {torch.tensor(avg_loss).mean()}")
 plt.hist(torch.tensor(avg_l2), bins=100)
 plt.title("L2 distance for position at 5 second")
             #plt.ylim([0,max(.1,torch.tensor(avg_losses).min()*2)])
