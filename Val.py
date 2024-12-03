@@ -7,13 +7,13 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 from torchdiffeq import odeint_adjoint as odeint
 from tqdm import tqdm
-val_dataset = PMNNDataset(start_time=4, stop_time=5, time_gap=1)
+val_dataset = PMNNDataset(start_time=4, stop_time=5, time_gap=8)
 val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, collate_fn=partial(dynamic_collate_fn, window_size=-1))
 func = ODEFunc().cuda()
 func.load_state_dict(torch.load("ReLU_model_3.pth", weights_only=True))
 fig = plt.figure(figsize=(12,3))
 batch_n = 0
-avg_losses = [[]]*10
+avg_l2 = []
 
 criterion = nn.MSELoss()
 with torch.no_grad():
@@ -21,34 +21,40 @@ with torch.no_grad():
         batch_n += 1
         t0, u0, x0, t,u,x = batch
         #print(t-t0)
-        #print(t0.shape, u0.shape, x0.shape, t.shape, u.shape, x.shape)
-        y0 = torch.cat([u0,x0],1)
-        y = torch.cat([u,x],1)
+        #print(t0.shape, u0.shape, x0.shape, t.shape, u.shape, x.shape,torch.tensor([[0,0,0]]).shape)
+        y0 = torch.cat([u0,torch.tensor([[0,0,0]]),x0[:,3:]],1)
+        y = torch.cat([u,x[:,:3]-x0[:,:3],x[:,3:]],1)
         pred = odeint(func,y0.cuda(),(t-t0).cuda(),method="rk4")
-        loss = criterion(torch.squeeze(pred)[8:],y[8:].cuda())
-        if len(avg_losses[0]) == 0:
-            avg_losses[0].append(loss.item())
-        else:
-            avg_losses[0].append(avg_losses[0][-1]+(loss.item() - avg_losses[0][-1])/batch_n)
+        L2 = torch.sqrt(torch.sum(torch.square(torch.squeeze(pred.cpu().detach())[:,8:11]-y[:,8:11]),dim=1))[-1]
+        #print((torch.squeeze(pred)[8:11] - y[8:11].cuda()).square().sum(dim=0))
+        avg_l2.append(L2)
         #print(loss.item())
         
-        if batch_n % 10 == 0:
-            tqdm.write(f"batch {batch_n}: avg loss {avg_losses[0][-1]}")
+        if batch_n % 100 == 0:
+            print(torch.cat([torch.squeeze(pred.cpu().detach())[:,8:11]+ x0[:,:3], torch.squeeze(pred.cpu().detach())[:,11:]], 1).shape)
+            print(torch.cat([y[:,8:11] + x0[:,:3], y[:,11:]],1).shape)
+            print()
+            #tqdm.write(f"batch {batch_n}: avg loss {avg_losses[0][-1]}")
             plt.clf()
             fig.suptitle(f"Epoch {0}. Batch {batch_n}")
             plt.subplot(141)
-            plt.plot(t,torch.squeeze(pred.cpu().detach())[:,8:])
+            plt.plot(t,torch.cat([torch.squeeze(pred.cpu().detach())[:,8:11]+ x0[:,:3], torch.squeeze(pred.cpu().detach())[:,11:]], 1))
             plt.title("pred")
             plt.subplot(142)
-            plt.plot(t,y[:,8:])
+            plt.plot(t,torch.cat([y[:,8:11] + x0[:,:3], y[:,11:]],1))
             plt.title("GT")
             plt.subplot(143)
             plt.plot(t,torch.squeeze(pred.cpu().detach())-y)
             plt.title("pred - GT")
             plt.subplot(144)
-            plt.plot(torch.tensor(avg_losses).T)
-            plt.title("avg losses")
-            plt.ylim([0,max(.1,torch.tensor(avg_losses).min()*2)])
+            plt.hist(torch.tensor(avg_l2), bins=100)
+            plt.title("L2 distance for position at 1 second")
+            #plt.ylim([0,max(.1,torch.tensor(avg_losses).min()*2)])
             plt.show(block=False)
             plt.pause(0.1)
-print(avg_losses[0][-1])
+            tqdm.write(f"Mean L2: {torch.tensor(avg_l2).mean()}. Max L2: {torch.tensor(avg_l2).max()}. Min L2: {torch.tensor(avg_l2).min()}")
+plt.hist(torch.tensor(avg_l2), bins=100)
+plt.title("L2 distance for position at 5 second")
+            #plt.ylim([0,max(.1,torch.tensor(avg_losses).min()*2)])
+plt.show()
+print(f"Mean L2: {torch.tensor(avg_l2).mean()}. Max L2: {torch.tensor(avg_l2).max()}. Min L2: {torch.tensor(avg_l2).min()}")

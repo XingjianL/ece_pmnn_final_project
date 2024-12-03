@@ -3,9 +3,8 @@ import torch
 class ODEFunc(nn.Module):
     def __init__(self):
         super(ODEFunc, self).__init__()
-        # Defining a two layer MLP with tanh activation
         self.net = nn.Sequential(
-            nn.Linear(21, 100),   # modify from 2 input/output to 3 input/output
+            nn.Linear(21, 100),
             nn.ReLU(),
             nn.Linear(100, 100),
             nn.ReLU(),
