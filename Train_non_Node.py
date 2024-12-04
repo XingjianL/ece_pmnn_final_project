@@ -27,7 +27,7 @@ criterion = nn.MSELoss()
 avg_losses = [[]]*10
 fig = plt.figure(figsize=(12,3))
 # Iterate through the data
-for i in range(1,4):
+for i in range(4):
     print(f"--it {i}: total batches: {len(training_loader)}")
     batch_n = 0
     for batch in tqdm(training_loader):
