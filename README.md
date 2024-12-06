@@ -9,17 +9,25 @@ The dataset and full project is available at [https://github.com/XingjianL/ece_p
 
 ### Dependencies
 `PyTorch` for data loading and model definitions
+
 `matplotlib` for plotting
+
 `torchdiffeq` for ode solver
+
 `tqdm` for displaying training progress
 
 ### train/val scripts
+Note: check commit history for other training configurations
+
 `Train_single_batch.py` is used for training neural ode models (currently configured for ReLU training)
+
 `Train.py` is NOT used (ignore this), was trying to load windowed batches of multiple sequences, but the library does not support uneven time steps so we use single sequence for training above.
 
 `Val.py` is used to generate L2 and MSE loss for the validation sequences (currently configured for Baseline model)
 
 ### non training/val scripts
 `tools/data_loader.py` loads and parse the dataset with pytorch dataloader
+
 `model/*.py` different models
+
 `parse_csv_data_to_sequences.py` parse the simulation output to individual sequence files
