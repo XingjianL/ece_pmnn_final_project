@@ -16,6 +16,10 @@ The dataset and full project is available at [https://github.com/XingjianL/ece_p
 
 `tqdm` for displaying training progress
 
+`pandas` for data loading
+
+`numpy` for data loading
+
 ### train/val scripts
 Note: check commit history for other training configurations
 
